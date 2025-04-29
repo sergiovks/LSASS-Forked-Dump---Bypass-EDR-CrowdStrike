@@ -44,7 +44,8 @@ O domínio era dele.
 - Alvo Windos,10,11, até versões server.
 - CrowdStrike ativo no alvo ou outro EDR monitorando processo e bloqueando dump manual.
 - Máquina atacante com pypykats, evil-winrm, netexec e editor de texto para editar o script caso precise.
-
+  
+![Banner do Projeto](Assets/Execução.png)
 
 # Etapas do ataque.
 
