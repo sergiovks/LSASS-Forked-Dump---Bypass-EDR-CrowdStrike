@@ -51,7 +51,7 @@ O domínio era dele.
 ### 1. Acesso Inicial
 - O atacante utiliza o Evil-WinRM para se conectar remotamente ao host comprometido:
 
-### 2. Upload do Lsass_Forke.PS1
+### 2. Upload do PoC_Lsass.PS1
 - O atacante envia o script PowerShell da PoC (LSASS Forked Dump) para o sistema:
 
 ### 3. Execução Lsass_Forke.PS1
@@ -61,7 +61,7 @@ O domínio era dele.
 - Um dump do processo clonado do LSASS é criado em:
 
 ### 5. Exfiltração
-- O dump pode ser baixado via WinRM para posterior análise em ferramentas como pypykatz: pypykatz-0.6.11 pypykatz-0.6.6
+- O dump pode ser baixado via WinRM para posterior análise em ferramentas como pypykatz: pypykatz-0.6.11 pypykatz-0.6.6 versão que os dumps foram testados.
 
 ![Banner do Projeto](Assets/Execução.png)
 
