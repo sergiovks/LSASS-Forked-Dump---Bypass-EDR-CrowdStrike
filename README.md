@@ -30,7 +30,7 @@ O domínio era dele.
 
 **E o CrowdStrike? Silencioso como a noite.**
 
-![Banner do Projeto](Assets/Banner.jpg)
+![Banner do Projeto](Assets/Banner.png)
 
 # Requesitos de Ataque
 - Credencial de local admin ou com permissionamento equivalente.
