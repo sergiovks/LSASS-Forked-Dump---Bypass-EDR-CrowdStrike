@@ -17,15 +17,13 @@ Criar uma cópia (fork) do processo lsass.exe e gerar seu dump de memória sem i
 
 O cenário onde a PoC foi feita inclui acesso remoto dentro do ambiente sem ter a necessidade de acesso direto por rdp ou contato direto com o dispositivo nessa PoC foi utilizado Evil-WinRM e Powershell em ambiente Windows com CrowdStrike ativo, o script pode ser modificado e adequado para outros cenários.
 
-# A História do Ataque Silencioso – LSASS Forked Dump vs. CrowdStrike
+# A História do Ataque Silencioso – LSASS Forked Dump vs. CrowdStrike ----> contém humor.
 
 Era um dia chuvoso no laboratório da Escola Hack3r. O operador Red Team “wtechsec” acabava de receber uma missão: simular o acesso inicial a um servidor Windows corporativo protegido por CrowdStrike e extrair credenciais sem acionar nenhum alarme.
 
 Após semanas estudando o comportamento dos sensores do Falcon, wtechsec sabia que qualquer tentativa direta de acessar a memória do LSASS causaria alerta imediato. Mimikatz, procdump, Pypykatz – tudo já estava na lista negra do EDR. Mas ele tinha um plano...
 
 Conectando-se via **Evil-WinRM**, wtechsec ganhou acesso ao servidor como um administrador local comprometido:
-
-**evil-winrm -i IP-ALVO -u USER -p SENHA ou -H HASH**
 
 No silêncio da sessão remota, wtechsec carregou sua criação: um script PowerShell artesanal, que clonava o processo LSASS usando a obscura syscall NtCreateProcessEx. O plano era simples e engenhoso:
 **Clonar o LSASS para um novo processo fora da vigilância direta do CrowdStrike.**
