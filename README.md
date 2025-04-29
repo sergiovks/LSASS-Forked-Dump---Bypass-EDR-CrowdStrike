@@ -1,4 +1,4 @@
-![Banner do Projeto](Assets/Designer.jpeg)
+![Banner do Projeto](Assets/Banner.jpg)
 
 
 # Análise Técnica - "LSASS Forked Dump - PoC"
