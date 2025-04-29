@@ -17,11 +17,11 @@ Após semanas estudando o comportamento dos sensores do Falcon, wtechsec sabia q
 
 Conectando-se via **Evil-WinRM**, wtechsec ganhou acesso ao servidor como um administrador local comprometido:
 
-# evil-winrm -i IP-ALVO -u USER -p SENHA ou -H HASH
+**evil-winrm -i IP-ALVO -u USER -p SENHA ou -H HASH**
 
 No silêncio da sessão remota, wtechsec carregou sua criação: um script PowerShell artesanal, que clonava o processo LSASS usando a obscura syscall NtCreateProcessEx. O plano era simples e engenhoso:
-# Clonar o LSASS para um novo processo fora da vigilância direta do CrowdStrike.
-# Realizar o dump nesse clone com MiniDumpWriteDump, escapando dos ganchos e alertas comportamentais.
+**Clonar o LSASS para um novo processo fora da vigilância direta do CrowdStrike.**
+**Realizar o dump nesse clone com MiniDumpWriteDump, escapando dos ganchos e alertas comportamentais.**
 
 O script rodou. Nenhum alerta. Nenhum bloqueio. Apenas um dump limpo, salvo em **C:\Users\Public\forked_lsass.dmp.**
 
