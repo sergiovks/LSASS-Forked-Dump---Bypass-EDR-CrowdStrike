@@ -3,19 +3,35 @@
 
 # Análise Técnica - "LSASS Forked Dump - PoC"
 
-Criar uma cópia (fork) do processo lsass.exe e gerar seu dump de memória sem interagir diretamente com o processo original, reduzindo a detecção por ferramentas defensivas essa técnica foi desenvolvida e testada em abiemtes com "CrowdStrike"
+Criar uma cópia (fork) do processo lsass.exe e gerar seu dump de memória sem interagir diretamente com o processo original, reduzindo a detecção por ferramentas defensivas essa técnica foi desenvolvida e testada em abiemtes com "CrowdStrike", destaco que nessa PoC meu foco foi criar um processo simplificado onde o atacante pode capturar as cerdencias do dump sem ter acionamento do EDR, o CrowdStike e outros EDRs monitoram processos primcipais dificultando atividades de ganho de acesso, exfiltração e credential access.
 
 # Descrição do Cenário
 
-Esta prova de conceito (PoC) realiza o **dump do LSASS** sem interagir diretamente com o processo original, utilizando a técnica **fork-and-dump**. Isso ajuda a **evitar detecção por EDRs modernos** que monitoram diretamente o `lsass.exe` a Poc foi realizada de forma remota com acesso via powershell ou Evil-Winrm, não tem necessidade de execução local.
+Esta prova de conceito demonstra a clonagem do processo LSASS via NtCreateProcessEx para realizar um dump de memória sem acionar EDRs. O clone é utilizado para contornar hooks e políticas de proteção em tempo real, permitindo a extração de credenciais de forma silenciosa. O cenário onde a PoC foi feita inclui acesso remoto dentro do ambiente sem ter a necessidade de acesso direto por rdp ou contato direto com o dispositivo nessa PoC foi utilizado Evil-WinRM e Powershell em ambiente Windows com CrowdStrike ativo.
 
-## Etapas do Ataque ##
+# A História do Ataque Silencioso – LSASS Forked Dump vs. CrowdStrike
 
-# Reconhecimento Prévio (Reconnaissance)
-- Coleta de informações sobre o alvo:
-- Identificar as rotinas do indivíduo ou grupo (ex.: hábitos, horários, preferências).
-- Obter dados de contexto (e-mail corporativo, setor de trabalho, hierarquia interna).
-- Mapeamento de tecnologias utilizadas no ambiente (ex.: dispositivos de login, sistemas operacionais).
+Era um dia chuvoso no laboratório da Escola Hack3r. O operador Red Team “wtechsec” acabava de receber uma missão: simular o acesso inicial a um servidor Windows corporativo protegido por CrowdStrike e extrair credenciais sem acionar nenhum alarme.
+
+Após semanas estudando o comportamento dos sensores do Falcon, wtechsec sabia que qualquer tentativa direta de acessar a memória do LSASS causaria alerta imediato. Mimikatz, procdump, Pypykatz – tudo já estava na lista negra do EDR. Mas ele tinha um plano...
+
+Conectando-se via **Evil-WinRM**, wtechsec ganhou acesso ao servidor como um administrador local comprometido:
+
+# evil-winrm -i IP-ALVO -u USER -p SENHA ou -H HASH
+
+No silêncio da sessão remota, wtechsec carregou sua criação: um script PowerShell artesanal, que clonava o processo LSASS usando a obscura syscall NtCreateProcessEx. O plano era simples e engenhoso:
+# Clonar o LSASS para um novo processo fora da vigilância direta do CrowdStrike.
+# Realizar o dump nesse clone com MiniDumpWriteDump, escapando dos ganchos e alertas comportamentais.
+
+O script rodou. Nenhum alerta. Nenhum bloqueio. Apenas um dump limpo, salvo em **C:\Users\Public\forked_lsass.dmp.**
+
+wtechsec sorriu. Ele sabia o que tinha em mãos. Um bypass real, discreto e funcional. O dump foi exfiltrado com calma. Ao analisá-lo localmente com o Mimikatz, ele recuperou as credenciais de domínio de um administrador sênior.
+O domínio era dele.
+
+**E o CrowdStrike? Silencioso como a noite.**
+
+
+
 
 # Definir o método de contato direto:
 - Presencial: Abordagem na área de trabalho ou em um local público.
