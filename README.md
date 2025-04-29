@@ -1,13 +1,13 @@
 ![Banner do Projeto](Assets/Designer.jpeg)
 
 
-# ATtyni85_Exfiltration
+# Análise Técnica - "LSASS Forked Dump - PoC"
 
-Um projeto para exfiltração de dados usando dispositivos ATtiny85, configurados para simular am ataque HID (Human Interface Device) atrelado a engenharia social e técnicas de exfiltração usando comandos no powershell e webhooks.
+Criar uma cópia (fork) do processo lsass.exe e gerar seu dump de memória sem interagir diretamente com o processo original, reduzindo a detecção por ferramentas defensivas essa técnica foi desenvolvida e testada em abiemtes com "CrowdStrike"
 
 # Descrição do Cenário
 
-Um operador de Red Team foca em um ataque presencial, onde utiliza técnicas de engenharia social para manipular o alvo. O objetivo é convencer a vítima a inserir e validar suas credenciais em um script malicioso, simulando um ataque realista.
+Esta prova de conceito (PoC) realiza o **dump do LSASS** sem interagir diretamente com o processo original, utilizando a técnica **fork-and-dump**. Isso ajuda a **evitar detecção por EDRs modernos** que monitoram diretamente o `lsass.exe` a Poc foi realizada de forma remota com acesso via powershell ou Evil-Winrm, não tem necessidade de execução local.
 
 ## Etapas do Ataque ##
 
