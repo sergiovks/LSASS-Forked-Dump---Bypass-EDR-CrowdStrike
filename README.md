@@ -3,11 +3,19 @@
 
 # Análise Técnica - "LSASS Forked Dump - PoC"
 
-Criar uma cópia (fork) do processo lsass.exe e gerar seu dump de memória sem interagir diretamente com o processo original, reduzindo a detecção por ferramentas defensivas essa técnica foi desenvolvida e testada em abiemtes com "CrowdStrike", destaco que nessa PoC meu foco foi criar um processo simplificado onde o atacante pode capturar as cerdencias do dump sem ter acionamento do EDR, o CrowdStike e outros EDRs monitoram processos primcipais dificultando atividades de ganho de acesso, exfiltração e credential access.
+Criar uma cópia (fork) do processo lsass.exe e gerar seu dump de memória sem interagir diretamente com o processo original, reduzindo a detecção por ferramentas defensivas essa técnica foi desenvolvida e testada em ambientes com "CrowdStrike", destaco que nessa PoC meu foco foi criar um processo simplificado onde o atacante pode capturar as cerdencias do dump sem ter acionamento do EDR, o CrowdStike e outros EDRs monitoram processos primcipais dificultando atividades de ganho de acesso, exfiltração e credential access.
+
+**A técnica clona o LSASS em um novo processo via NtCreateProcessEx.**
+
+**A maioria dos EDRs (como o CrowdStrike) monitora chamadas diretas ao LSASS ou à API MiniDumpWriteDump no contexto do LSASS original.**
+
+**Ao executar o dump sobre o clone, o processo malicioso escapa da detecção comportamental padrão.**
+
+**Não há criação de alertas durante testes com CrowdStrike em modo de proteção total (Prevent Mode).**
 
 # Descrição do Cenário
 
-Esta prova de conceito demonstra a clonagem do processo LSASS via NtCreateProcessEx para realizar um dump de memória sem acionar EDRs. O clone é utilizado para contornar hooks e políticas de proteção em tempo real, permitindo a extração de credenciais de forma silenciosa. O cenário onde a PoC foi feita inclui acesso remoto dentro do ambiente sem ter a necessidade de acesso direto por rdp ou contato direto com o dispositivo nessa PoC foi utilizado Evil-WinRM e Powershell em ambiente Windows com CrowdStrike ativo.
+O cenário onde a PoC foi feita inclui acesso remoto dentro do ambiente sem ter a necessidade de acesso direto por rdp ou contato direto com o dispositivo nessa PoC foi utilizado Evil-WinRM e Powershell em ambiente Windows com CrowdStrike ativo, o script pode ser modificado e adequado para outros cenários.
 
 # A História do Ataque Silencioso – LSASS Forked Dump vs. CrowdStrike
 
