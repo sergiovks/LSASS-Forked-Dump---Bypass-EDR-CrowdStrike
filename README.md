@@ -45,7 +45,6 @@ O domínio era dele.
 - CrowdStrike ativo no alvo ou outro EDR monitorando processo e bloqueando dump manual.
 - Máquina atacante com pypykats, evil-winrm, netexec e editor de texto para editar o script caso precise.
   
-![Banner do Projeto](Assets/Execução.png)
 
 # Etapas do ataque.
 
@@ -64,6 +63,7 @@ O domínio era dele.
 ### 5. Exfiltração
 - O dump pode ser baixado via WinRM para posterior análise em ferramentas como pypykatz: pypykatz-0.6.11 pypykatz-0.6.6
 
+![Banner do Projeto](Assets/Execução.png)
 
   #### Tutorial em video ###
 
