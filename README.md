@@ -67,7 +67,8 @@ O domínio era dele.
 
   #### Tutorial em video ###
 
-[![Assista ao vídeo no YouTube](https://img.youtube.com/vi/rCtWvcGW0go/hqdefault.jpg)](https://youtu.be/1fABpuAMF-A)
+[![PoC Lsass Dump - YouTube](https://img.youtube.com/vi/1fABpuAMF-A/hqdefault.jpg)](https://youtu.be/1fABpuAMF-A)
+
 
 
 
