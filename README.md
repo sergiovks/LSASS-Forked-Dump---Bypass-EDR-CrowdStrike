@@ -52,10 +52,10 @@ O domínio era dele.
 - O atacante utiliza o Evil-WinRM para se conectar remotamente ao host comprometido:
 
 ### 2. Upload do PoC_Lsass.PS1
-- O atacante envia o script PowerShell da PoC (LSASS Forked Dump) para o sistema:
+- O atacante envia o script PowerShell da PoC (LSASS Forked Dump):
 
 ### 3. Execução Lsass_Forke.PS1
-- O atacante executa o script via powershell no terminal WinRM:
+- O atacante executa o script via sessão remota com Evil-Winrm:
 
 ### 4. Dump Gerado
 - Um dump do processo clonado do LSASS é criado em:
