@@ -67,7 +67,7 @@ O domínio era dele.
 
   #### Tutorial em video ###
 
-[![Assista ao vídeo no YouTube](https://img.youtube.com/vi/rCtWvcGW0go/hqdefault.jpg)](https://www.youtube.com/watch?v=rCtWvcGW0go)
+[![Assista ao vídeo no YouTube](https://img.youtube.com/vi/rCtWvcGW0go/hqdefault.jpg)](https://youtu.be/1fABpuAMF-A)
 
 
 
