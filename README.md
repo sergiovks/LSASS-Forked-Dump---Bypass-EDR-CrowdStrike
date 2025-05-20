@@ -1,74 +1,74 @@
-![Banner do Projeto](Assets/Banner.jpg)
+![Banner del Proyecto](Assets/Banner.jpg)
 
+**Creado por:** Willian Oliveira  
+**Traducido por:** sezio (sergiovks)  
 
-# Análise Técnica - "LSASS Forked Dump - PoC"
+# Análisis Técnico - "LSASS Forked Dump - PoC"
 
-Criar uma cópia (fork) do processo lsass.exe e gerar seu dump de memória sem interagir diretamente com o processo original, reduzindo a detecção por ferramentas defensivas essa técnica foi desenvolvida e testada em ambientes com "CrowdStrike", destaco que nessa PoC meu foco foi criar um processo simplificado onde o atacante pode capturar as cerdencias do dump sem ter acionamento do EDR, o CrowdStike e outros EDRs monitoram processos primcipais dificultando atividades de ganho de acesso, exfiltração e credential access.
+Crear una copia (fork) del proceso `lsass.exe` y generar su volcado de memoria sin interactuar directamente con el proceso original, reduciendo la detección por herramientas defensivas. Esta técnica fue desarrollada y probada en entornos con "CrowdStrike". Destaco que en esta PoC mi objetivo fue crear un proceso simplificado donde el atacante pueda capturar las credenciales del volcado sin activar el EDR. CrowdStrike y otros EDRs monitorean procesos clave, dificultando actividades como escalada de privilegios, exfiltración y acceso a credenciales.
 
-**A técnica clona o LSASS em um novo processo via NtCreateProcessEx.**
+**La técnica clona el proceso LSASS en un nuevo proceso utilizando `NtCreateProcessEx`.**
 
-**A maioria dos EDRs (como o CrowdStrike) monitora chamadas diretas ao LSASS ou à API MiniDumpWriteDump no contexto do LSASS original.**
+**La mayoría de los EDRs (como CrowdStrike) monitorean llamadas directas a LSASS o a la API `MiniDumpWriteDump` dentro del contexto del LSASS original.**
 
-**Ao executar o dump sobre o clone, o processo malicioso escapa da detecção comportamental padrão.**
+**Al ejecutar el volcado sobre el clon, el proceso malicioso evade la detección comportamental estándar.**
 
-**Não há criação de alertas durante testes com CrowdStrike em modo de proteção total (Prevent Mode).**
+**Durante las pruebas con CrowdStrike en modo de protección total (Prevent Mode), no se generaron alertas.**
 
-# Descrição do Cenário
+# Descripción del Escenario
 
-O cenário onde a PoC foi feita inclui acesso remoto dentro do ambiente sem ter a necessidade de acesso direto por rdp ou contato direto com o dispositivo nessa PoC foi utilizado Evil-WinRM e Powershell em ambiente Windows com CrowdStrike ativo, o script pode ser modificado e adequado para outros cenários.
+El escenario de la PoC incluye acceso remoto al entorno sin necesidad de conexión directa por RDP o contacto físico con el dispositivo. En esta PoC se utilizó **Evil-WinRM** y PowerShell en un entorno Windows con CrowdStrike activo. El script puede ser modificado y adaptado a otros escenarios.
 
-# A História do Ataque Silencioso – LSASS Forked Dump vs. CrowdStrike ----> contém humor.
+# La Historia del Ataque Silencioso – LSASS Forked Dump vs. CrowdStrike (con un toque de humor)
 
-Era um dia chuvoso no laboratório da Escola Hack3r. O operador Red Team “wtechsec” acabava de receber uma missão: simular o acesso inicial a um servidor Windows corporativo protegido por CrowdStrike e extrair credenciais sem acionar nenhum alarme.
+Era un día lluvioso en el laboratorio de la Escola Hack3r. El operador del Red Team “wtechsec” acababa de recibir una misión: simular el acceso inicial a un servidor Windows corporativo protegido por CrowdStrike y extraer credenciales sin activar ninguna alarma.
 
-Após semanas estudando o comportamento dos sensores do Falcon, wtechsec sabia que qualquer tentativa direta de acessar a memória do LSASS causaria alerta imediato. Mimikatz, procdump, Pypykatz – tudo já estava na lista negra do EDR. Mas ele tinha um plano...
+Tras semanas estudiando el comportamiento de los sensores del Falcon, wtechsec sabía que cualquier intento directo de acceder a la memoria del LSASS causaría una alerta inmediata. Mimikatz, procdump, Pypykatz: todos ya estaban en la lista negra del EDR. Pero él tenía un plan...
 
-Conectando-se via **Evil-WinRM**, wtechsec ganhou acesso ao servidor como um administrador local comprometido:
+Conectándose vía **Evil-WinRM**, wtechsec obtuvo acceso al servidor como un administrador local comprometido:
 
-No silêncio da sessão remota, wtechsec carregou sua criação: um script PowerShell artesanal, que clonava o processo LSASS usando a obscura syscall NtCreateProcessEx. O plano era simples e engenhoso:
-**Clonar o LSASS para um novo processo fora da vigilância direta do CrowdStrike.**
-**Realizar o dump nesse clone com MiniDumpWriteDump, escapando dos ganchos e alertas comportamentais.**
+En el silencio de la sesión remota, wtechsec ejecutó su creación: un script artesanal en PowerShell que clonaba el proceso LSASS utilizando la oscura syscall `NtCreateProcessEx`. El plan era simple e ingenioso:  
+**Clonar LSASS en un nuevo proceso fuera del alcance directo de la vigilancia de CrowdStrike.**  
+**Realizar el volcado de memoria en ese clon utilizando `MiniDumpWriteDump`, evadiendo los hooks y las alertas comportamentales.**
 
-O script rodou. Nenhum alerta. Nenhum bloqueio. Apenas um dump limpo, salvo em **C:\Users\Public\forked_lsass.dmp.**
+El script se ejecutó.  
+Sin alertas.  
+Sin bloqueos.  
+Solo un volcado limpio, guardado en **C:\Users\Public\forked_lsass.dmp.**
 
-wtechsec sorriu. Ele sabia o que tinha em mãos. Um bypass real, discreto e funcional. O dump foi exfiltrado com calma. Ao analisá-lo localmente com o Mimikatz, ele recuperou as credenciais de domínio de um administrador sênior.
-O domínio era dele.
+wtechsec sonrió. Sabía lo que tenía en las manos. Un bypass real, discreto y funcional. El volcado fue exfiltrado con calma. Al analizarlo localmente con Mimikatz, recuperó las credenciales de dominio de un administrador senior.  
+El dominio era suyo.
 
-**E o CrowdStrike? Silencioso como a noite.**
+**¿Y CrowdStrike? Silencioso como la noche.**
 
-![Banner do Projeto](Assets/Banner.png)
+![Banner del Proyecto](Assets/Banner.png)
 
-# Requesitos de Ataque
-- Credencial de local admin ou com permissionamento equivalente.
-- Usar Winrm - EvilWinrm, Powershell remote, ou reverse shell, dependendo do nivel de comprometimento do alvo e orquestração.
-- Alvo Windos,10,11, até versões server.
-- CrowdStrike ativo no alvo ou outro EDR monitorando processo e bloqueando dump manual.
-- Máquina atacante com pypykats, evil-winrm, netexec e editor de texto para editar o script caso precise.
-  
+# Requisitos del Ataque
+- Credenciales de administrador local o con permisos equivalentes.
+- Uso de WinRM – Evil-WinRM, PowerShell remoto o shell inverso, dependiendo del nivel de compromiso y orquestación.
+- Objetivo: Windows 10, 11 y versiones Server.
+- CrowdStrike activo en el objetivo u otro EDR que monitoree procesos y bloquee volcados manuales.
+- Máquina atacante con pypykatz, evil-winrm, netexec y un editor de texto para modificar el script si es necesario.
 
-# Etapas do ataque.
+# Etapas del Ataque
 
-### 1. Acesso Inicial
-- O atacante utiliza o Evil-WinRM para se conectar remotamente ao host comprometido:
+### 1. Acceso Inicial
+- El atacante utiliza **Evil-WinRM** para conectarse remotamente al host comprometido.
 
-### 2. Upload do PoC_Lsass.PS1
-- O atacante envia o script PowerShell da PoC (LSASS Forked Dump):
+### 2. Carga del archivo PoC_Lsass.PS1
+- El atacante transfiere el script PowerShell de la PoC (LSASS Forked Dump).
 
-### 3. Execução Lsass_Forke.PS1
-- O atacante executa o script via sessão remota com Evil-Winrm:
+### 3. Ejecución del script Lsass_Forked.PS1
+- El atacante ejecuta el script a través de la sesión remota con Evil-WinRM.
 
-### 4. Dump Gerado
-- Um dump do processo clonado do LSASS é criado em:
+### 4. Volcado generado
+- Se crea un volcado del proceso clonado de LSASS en:
 
-### 5. Exfiltração
-- O dump pode ser baixado via WinRM para posterior análise em ferramentas como pypykatz: pypykatz-0.6.11 pypykatz-0.6.6 versão que os dumps foram testados.
+### 5. Exfiltración
+- El volcado puede descargarse vía WinRM para análisis posterior con herramientas como **pypykatz**: se probó con versiones 0.6.11 y 0.6.6.
 
-![Banner do Projeto](Assets/Execução.png)
+![Banner del Proyecto](Assets/Ejecución.png)
 
-  #### Tutorial em video ###
+#### Tutorial en video
 
 [![PoC Lsass Dump - YouTube](https://img.youtube.com/vi/1fABpuAMF-A/hqdefault.jpg)](https://youtu.be/1fABpuAMF-A)
-
-
-
-
