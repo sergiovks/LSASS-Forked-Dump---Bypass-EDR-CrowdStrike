@@ -67,7 +67,7 @@ El dominio era suyo.
 ### 5. Exfiltración
 - El volcado puede descargarse vía WinRM para análisis posterior con herramientas como **pypykatz**: se probó con versiones 0.6.11 y 0.6.6.
 
-![Banner del Proyecto](Assets/Ejecución.png)
+![Ejecución](Assets/Ejecución.png)
 
 #### Tutorial en video
 
